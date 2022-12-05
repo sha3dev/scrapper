@@ -1,0 +1,4 @@
+{
+  "extends": "@sha3dev/tsconfig/base.json",
+  "include": ["src"]
+}
