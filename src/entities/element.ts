@@ -1,5 +1,5 @@
 /**
- * PageElement
+ * Element
  */
 
 /**
@@ -29,7 +29,7 @@ const logger = new Logger("scrapper");
  * exports
  */
 
-export default class PageElement {
+export default class Element {
   /**
    * static: attributes
    */
@@ -51,8 +51,8 @@ export default class PageElement {
    */
 
   constructor(private parentPage: Page, private elementHandle: ElementHandle) {
-    this.id = PageElement.currentElementIndex;
-    PageElement.currentElementIndex += 1;
+    this.id = Element.currentElementIndex;
+    Element.currentElementIndex += 1;
   }
 
   /**

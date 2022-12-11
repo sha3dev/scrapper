@@ -14,7 +14,7 @@ import Logger from "@sha3dev/logger";
  */
 
 import CONFIG from "../config";
-import PageElement from "./page-element";
+import Element from "./element";
 
 /**
  * module: initializations
@@ -150,8 +150,8 @@ export default class Tab {
 
   public async addStyleTag(style: string) {
     const elem = await this.page.addStyleTag({ content: style });
-    const pageElement = new PageElement(this.page, elem);
-    return pageElement;
+    const element = new Element(this.page, elem);
+    return element;
   }
 
   public async moveScrollToBottom(selector: string) {
