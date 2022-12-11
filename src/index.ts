@@ -1,3 +1,3 @@
-import loadTab from "./use-cases/load-tab";
+import Browser from "./entities/browser";
 
-export default { loadTab };
+export default Browser;

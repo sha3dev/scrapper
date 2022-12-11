@@ -22,7 +22,6 @@
     "@types/jsdom": "^20.0.1",
     "@types/sharp": "^0.31.0",
     "@vitest/coverage-c8": "*",
-    "tsup": "*",
     "typescript": "*",
     "vitest": "*"
   }

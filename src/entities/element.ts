@@ -7,6 +7,7 @@
  */
 
 import { Page, ElementHandle } from "puppeteer";
+import sharp from "sharp";
 import Logger from "@sha3dev/logger";
 
 /**
@@ -78,10 +79,28 @@ export default class Element {
     });
   }
 
-  public async toImageBuffer(options: { omitBackground?: boolean } = {}) {
-    const buffer = await this.elementHandle.screenshot({
+  public async toImageBuffer(
+    options: {
+      omitBackground?: boolean;
+      trim?: boolean;
+      backgroundColor?: string;
+    } = {}
+  ) {
+    let buffer = await this.elementHandle.screenshot({
       omitBackground: !!options.omitBackground
     });
+    if (options?.trim || options?.backgroundColor) {
+      let sharpInstance = sharp(buffer);
+      if (options?.trim) {
+        sharpInstance = sharpInstance.trim();
+      }
+      if (options?.backgroundColor) {
+        sharpInstance = sharpInstance.flatten({
+          background: options.backgroundColor
+        });
+      }
+      buffer = await sharpInstance.toBuffer();
+    }
     return buffer;
   }
 
