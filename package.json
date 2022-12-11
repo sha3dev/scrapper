@@ -2,23 +2,15 @@
   "name": "@sha3dev/scrapper",
   "version": "0.0.0",
   "private": false,
-  "main": "./dist/index.mjs",
-  "source": "./src/index.ts",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**"
-  ],
+  "main": "./src/index.ts",
   "scripts": {
-    "clean": "rm -rf dist",
-    "build": "tsup src/index.ts --format esm --dts",
-    "dev": "npm run build --watch",
     "lint": "eslint 'src/**'",
     "doc": "typedoc --out docs 'src/index.ts'",
     "test": "vitest run --coverage",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@sha3dev/tagged-console": "*",
+    "@sha3dev/logger": "^0.0.1",
     "dotenv": "^16.0.3",
     "jsdom": "^20.0.2",
     "puppeteer": "^19.2.0",
