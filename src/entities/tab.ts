@@ -32,9 +32,9 @@ export type TabViewPort = {
 };
 
 export type TabWaitAndScrollToBottomOptions = {
-  selectorToWait: string;
+  selectorToWait?: string;
   containerSelectorToScroll: string;
-  selectorToWaitAfterScroll: string;
+  selectorToWaitAfterScroll?: string;
   waitTimeout?: number;
 };
 

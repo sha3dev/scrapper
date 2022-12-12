@@ -6,7 +6,7 @@
  * imports: externals
  */
 
-import puppeteer, { Browser as PupeteerBrowser } from "puppeteer";
+import puppeteer, { Browser as PuppeteerBrowser } from "puppeteer";
 import Logger from "@sha3dev/logger";
 
 /**
@@ -31,7 +31,7 @@ export default class Browser {
    * private: attributes
    */
 
-  private browserInstance: PupeteerBrowser | null = null;
+  private browserInstance: PuppeteerBrowser | null = null;
 
   private pagesCount: number = 0;
 
