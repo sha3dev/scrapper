@@ -89,19 +89,19 @@ export default class Element {
     let buffer = await this.elementHandle.screenshot({
       omitBackground: !!options.omitBackground
     });
-    if (options?.trim || options?.backgroundColor) {
+    if (options.trim || options?.backgroundColor) {
       let sharpInstance = sharp(buffer);
-      if (options?.trim) {
+      if (options.trim) {
         sharpInstance = sharpInstance.trim();
       }
-      if (options?.backgroundColor) {
+      if (options.backgroundColor) {
         sharpInstance = sharpInstance.flatten({
           background: options.backgroundColor
         });
       }
       buffer = await sharpInstance.toBuffer();
     }
-    return buffer;
+    return Buffer.from(buffer);
   }
 
   public async getPropertyJsonValue(propertyName: string) {

@@ -7,5 +7,5 @@ export default {
     ENV.PUPPETEER_LAUNCH_ARGS ||
     `--disable-web-security --allow-running-insecure-content --lang=en-US,en`
   ).split(" "),
-  DEFAULT_TIMEOUT_MS: Number(ENV.DEFAULT_TIMEOUT_MS || "60000")
+  DEFAULT_TIMEOUT_MS: Number(ENV.DEFAULT_TIMEOUT_MS || 60000)
 };

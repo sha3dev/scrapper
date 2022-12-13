@@ -202,4 +202,9 @@ export default class Tab {
     const element = new Element(this.page, elem);
     return element;
   }
+
+  public async querySelector(selector: string) {
+    const elementHandle = await this.page.$(selector);
+    return elementHandle ? new Element(this.page, elementHandle) : null;
+  }
 }

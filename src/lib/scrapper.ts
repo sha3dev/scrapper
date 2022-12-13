@@ -1,12 +1,12 @@
 /**
- * Browser
+ * Scrapper
  */
 
 /**
  * imports: externals
  */
 
-import puppeteer, { Browser as PuppeteerBrowser } from "puppeteer";
+import puppeteer, { Browser } from "puppeteer";
 import Logger from "@sha3dev/logger";
 
 /**
@@ -26,12 +26,12 @@ const logger = new Logger("scrapper");
  * exports
  */
 
-export default class Browser {
+export default class Scrapper {
   /**
    * private: attributes
    */
 
-  private browserInstance: PuppeteerBrowser | null = null;
+  private browserInstance: Browser | null = null;
 
   private pagesCount: number = 0;
 
