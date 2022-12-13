@@ -98,6 +98,13 @@ export default class Tab {
     );
   }
 
+  private async waitForSelectorDisappear(selector: string, timeout: number) {
+    await this.waitForFunction(
+      (window: Window) => !window.document.querySelector(selector),
+      timeout
+    );
+  }
+
   private async getScrollerOffsetHeight(selector: string) {
     const offsetHeightValue = await this.execFunction((window: Window) => {
       const scroller = window.document.querySelector<HTMLDivElement>(selector);
@@ -176,7 +183,7 @@ export default class Tab {
         this.tabConfig.waitAndScrollOptions.containerSelectorToScroll
       );
       if (this.tabConfig.waitAndScrollOptions.selectorToWaitAfterScroll) {
-        await this.waitForSelector(
+        await this.waitForSelectorDisappear(
           this.tabConfig.waitAndScrollOptions.selectorToWaitAfterScroll,
           this.tabConfig.waitAndScrollOptions.waitTimeout ||
             CONFIG.DEFAULT_TIMEOUT_MS
