@@ -1,6 +1,6 @@
-import Scrapper from "./domain/scrapper";
-import Tab from "./domain/tab";
-import Element from "./domain/element";
+import Scrapper from "./lib/scrapper";
+import Tab from "./lib/tab";
+import Element from "./lib/element";
 
 export { Tab, Element };
 export default Scrapper;

@@ -73,64 +73,60 @@ export default class Tab {
     // navigate to url
     await this.page.goto(url, {
       waitUntil: "networkidle0",
-      timeout: CONFIG.SCRAPPER_DEFAULT_TIMEOUT_MS
+      timeout: CONFIG.DEFAULT_TIMEOUT_MS
     });
   }
 
-  private async execFunction(functionToExec: (window: Window) => any) {
-    const wrappedFunction = `((${functionToExec.toString()})(window))`;
+  private async execFunction(functionToExec: string) {
+    const wrappedFunction = `((${functionToExec})(window))`;
     const result = await this.page.evaluate(wrappedFunction);
     return result;
   }
 
-  private async waitForFunction(
-    functionToExec: (window: Window) => any,
-    timeout?: number
-  ) {
-    const wrappedFunction = `((${functionToExec.toString()})(window))`;
+  private async waitForFunction(functionToExec: string, timeout?: number) {
+    const wrappedFunction = `((${functionToExec})(window))`;
     return this.page.waitForFunction(wrappedFunction, { timeout });
   }
 
   private async waitForSelector(selector: string, timeout: number) {
-    await this.waitForFunction(
-      (window: Window) => window.document.querySelector(selector),
-      timeout
-    );
+    const functionToExec = `() => window.document.querySelector('${selector}')`;
+    await this.waitForFunction(functionToExec, timeout);
   }
 
   private async waitForSelectorDisappear(selector: string, timeout: number) {
-    await this.waitForFunction(
-      (window: Window) => !window.document.querySelector(selector),
-      timeout
-    );
+    const functionToExec = `() => window.document.querySelector('${selector}')`;
+    await this.waitForFunction(functionToExec, timeout);
   }
 
   private async getScrollerOffsetHeight(selector: string) {
-    const offsetHeightValue = await this.execFunction((window: Window) => {
-      const scroller = window.document.querySelector<HTMLDivElement>(selector);
-      return scroller ? scroller.offsetHeight : null;
-    });
+    const offsetHeightValue = await this.execFunction(
+      `() => {
+        const scroller = window.document.querySelector('${selector}');
+        return scroller ? scroller.offsetHeight : null;
+      }`
+    );
     return !Number.isNaN(offsetHeightValue) ? Number(offsetHeightValue) : null;
   }
 
   private async getVerticalScroll(selector: string) {
-    const scrollValue = await this.execFunction((window: Window) => {
-      const verticalScroller =
-        window.document.querySelector<HTMLDivElement>(selector);
-      if (verticalScroller?.scrollHeight) {
-        return (
-          (verticalScroller.scrollTop + verticalScroller.offsetHeight) /
-          verticalScroller.scrollHeight
-        );
-      }
-      return null;
-    });
+    const scrollValue = await this.execFunction(
+      `() => {
+        const verticalScroller = window.document.querySelector('${selector}');
+        if (verticalScroller.scrollHeight) {
+          return (
+            (verticalScroller.scrollTop + verticalScroller.offsetHeight) /
+            verticalScroller.scrollHeight
+          );
+        }
+        return null;
+      }`
+    );
     return !Number.isNaN(scrollValue) ? Number(scrollValue) : null;
   }
 
   private async moveVerticalScroll(selector: string, distanceInPixels: number) {
-    await this.page.evaluate(
-      `document.querySelector(selector).scrollTop += ${distanceInPixels}`
+    await this.execFunction(
+      `() => document.querySelector('${selector}').scrollTop += ${distanceInPixels}`
     );
   }
 
@@ -153,7 +149,6 @@ export default class Tab {
 
   constructor(
     private page: Page,
-    private tabConfig: TabConfig,
     // closeFunction: function to invoke for closing this page and free resources
     // on parent browser instance
     private closeFunction: () => Promise<void>
@@ -163,29 +158,29 @@ export default class Tab {
    * public: methods
    */
 
-  public async load() {
-    logger.debug(`loading tab ${this.tabConfig.url}`);
-    await this.setViewport(this.tabConfig.viewport);
-    await this.setExtraHeaders(this.tabConfig.headers);
-    await this.navigateToUrl(this.tabConfig.url);
-    if (this.tabConfig.waitAndScrollOptions?.containerSelectorToScroll) {
+  public async load(tabConfig: TabConfig) {
+    logger.debug(`loading tab ${tabConfig.url}`);
+    await this.setViewport(tabConfig.viewport);
+    await this.setExtraHeaders(tabConfig.headers);
+    await this.navigateToUrl(tabConfig.url);
+    if (tabConfig.waitAndScrollOptions?.containerSelectorToScroll) {
       logger.debug(
-        `scrolling bottom to force lazy loading (container: ${this.tabConfig.waitAndScrollOptions.containerSelectorToScroll})`
+        `scrolling bottom to force lazy loading (container: ${tabConfig.waitAndScrollOptions.containerSelectorToScroll})`
       );
-      if (this.tabConfig.waitAndScrollOptions.selectorToWait) {
+      if (tabConfig.waitAndScrollOptions.selectorToWait) {
         await this.waitForSelector(
-          this.tabConfig.waitAndScrollOptions.selectorToWait,
-          this.tabConfig.waitAndScrollOptions.waitTimeout ||
+          tabConfig.waitAndScrollOptions.selectorToWait,
+          tabConfig.waitAndScrollOptions.waitTimeout ||
             CONFIG.DEFAULT_TIMEOUT_MS
         );
       }
       await this.moveScrollToBottom(
-        this.tabConfig.waitAndScrollOptions.containerSelectorToScroll
+        tabConfig.waitAndScrollOptions.containerSelectorToScroll
       );
-      if (this.tabConfig.waitAndScrollOptions.selectorToWaitAfterScroll) {
+      if (tabConfig.waitAndScrollOptions.selectorToWaitAfterScroll) {
         await this.waitForSelectorDisappear(
-          this.tabConfig.waitAndScrollOptions.selectorToWaitAfterScroll,
-          this.tabConfig.waitAndScrollOptions.waitTimeout ||
+          tabConfig.waitAndScrollOptions.selectorToWaitAfterScroll,
+          tabConfig.waitAndScrollOptions.waitTimeout ||
             CONFIG.DEFAULT_TIMEOUT_MS
         );
       }
@@ -193,7 +188,6 @@ export default class Tab {
   }
 
   public async close() {
-    logger.debug(`closing tab ${this.tabConfig.url}`);
     await this.closeFunction();
   }
 

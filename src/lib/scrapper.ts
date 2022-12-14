@@ -14,7 +14,7 @@ import Logger from "@sha3dev/logger";
  */
 
 import CONFIG from "../config";
-import Tab, { TabConfig } from "./tab";
+import Tab from "./tab";
 
 /**
  * module: initializations
@@ -47,7 +47,7 @@ export default class Scrapper {
    * public: methods
    */
 
-  public async loadTab(tabConfig: TabConfig) {
+  public async openNewTab() {
     if (!this.browserInstance) {
       this.browserInstance = await puppeteer.launch({
         headless: true,
@@ -56,15 +56,9 @@ export default class Scrapper {
     }
     const newPage = await this.browserInstance.newPage();
     this.pagesCount += 1;
-    logger.debug(
-      `opening new page: ${tabConfig.url} (count: ${this.pagesCount})`
-    );
-    return new Tab(newPage, tabConfig, async () => {
+    return new Tab(newPage, async () => {
       this.pagesCount -= 1;
       await newPage.close();
-      logger.debug(
-        `closing page: ${tabConfig.url} (count: ${this.pagesCount})`
-      );
     });
   }
 }
