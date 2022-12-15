@@ -104,7 +104,7 @@ export default class Element {
     return Buffer.from(buffer);
   }
 
-  public async getPropertyJsonValue(propertyName: string) {
+  public async getValue(propertyName: string) {
     const property = await this.elementHandle.getProperty(propertyName);
     const propertyValue = property ? await property.jsonValue() : null;
     return propertyValue;

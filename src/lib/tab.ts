@@ -8,6 +8,7 @@
 
 import { Page } from "puppeteer";
 import Logger from "@sha3dev/logger";
+import { JSDOM } from "jsdom";
 
 /**
  * imports: internals
@@ -31,11 +32,9 @@ export type TabViewPort = {
   height: number;
 };
 
-export type TabWaitAndScrollToBottomOptions = {
-  selectorToWait?: string;
-  containerSelectorToScroll: string;
-  selectorToWaitAfterScroll?: string;
-  waitTimeout?: number;
+export type TabCookie = {
+  name: string;
+  value: string;
 };
 
 export type TabConfig = {
@@ -43,8 +42,12 @@ export type TabConfig = {
   viewport: TabViewPort;
   style?: string;
   headers?: Record<string, string>;
-  waitAndScrollOptions?: TabWaitAndScrollToBottomOptions;
+  cookies?: TabCookie[];
 };
+
+/**
+ * consts
+ */
 
 /**
  * exports
@@ -83,21 +86,6 @@ export default class Tab {
     return result;
   }
 
-  private async waitForFunction(functionToExec: string, timeout?: number) {
-    const wrappedFunction = `((${functionToExec})(window))`;
-    return this.page.waitForFunction(wrappedFunction, { timeout });
-  }
-
-  private async waitForSelector(selector: string, timeout: number) {
-    const functionToExec = `() => window.document.querySelector('${selector}')`;
-    await this.waitForFunction(functionToExec, timeout);
-  }
-
-  private async waitForSelectorDisappear(selector: string, timeout: number) {
-    const functionToExec = `() => window.document.querySelector('${selector}')`;
-    await this.waitForFunction(functionToExec, timeout);
-  }
-
   private async getScrollerOffsetHeight(selector: string) {
     const offsetHeightValue = await this.execFunction(
       `() => {
@@ -130,19 +118,6 @@ export default class Tab {
     );
   }
 
-  private async moveScrollToBottom(selector: string) {
-    let scrollPerc = await this.getVerticalScroll(selector);
-    const scrollerHeight = await this.getScrollerOffsetHeight(selector);
-    while (scrollerHeight !== null && scrollPerc !== null && scrollPerc < 0.9) {
-      // eslint-disable-next-line no-await-in-loop
-      await this.moveVerticalScroll(selector, scrollerHeight);
-      // eslint-disable-next-line no-await-in-loop
-      scrollPerc = await this.getVerticalScroll(selector);
-      // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-  }
-
   /**
    * constructor
    */
@@ -160,31 +135,10 @@ export default class Tab {
 
   public async load(tabConfig: TabConfig) {
     logger.debug(`loading tab ${tabConfig.url}`);
+    await this.setCookies(tabConfig.cookies);
     await this.setViewport(tabConfig.viewport);
     await this.setExtraHeaders(tabConfig.headers);
     await this.navigateToUrl(tabConfig.url);
-    if (tabConfig.waitAndScrollOptions?.containerSelectorToScroll) {
-      logger.debug(
-        `scrolling bottom to force lazy loading (container: ${tabConfig.waitAndScrollOptions.containerSelectorToScroll})`
-      );
-      if (tabConfig.waitAndScrollOptions.selectorToWait) {
-        await this.waitForSelector(
-          tabConfig.waitAndScrollOptions.selectorToWait,
-          tabConfig.waitAndScrollOptions.waitTimeout ||
-            CONFIG.DEFAULT_TIMEOUT_MS
-        );
-      }
-      await this.moveScrollToBottom(
-        tabConfig.waitAndScrollOptions.containerSelectorToScroll
-      );
-      if (tabConfig.waitAndScrollOptions.selectorToWaitAfterScroll) {
-        await this.waitForSelectorDisappear(
-          tabConfig.waitAndScrollOptions.selectorToWaitAfterScroll,
-          tabConfig.waitAndScrollOptions.waitTimeout ||
-            CONFIG.DEFAULT_TIMEOUT_MS
-        );
-      }
-    }
   }
 
   public async close() {
@@ -200,5 +154,47 @@ export default class Tab {
   public async querySelector(selector: string) {
     const elementHandle = await this.page.$(selector);
     return elementHandle ? new Element(this.page, elementHandle) : null;
+  }
+
+  public async querySelectorAll(selector: string) {
+    const elementHandles = await this.page.$$(selector);
+    return elementHandles.map((i) => new Element(this.page, i));
+  }
+
+  public async waitForSelector(
+    selector: string,
+    options: {
+      waitUntil?: "appear" | "disappear";
+      timeout?: number;
+    } = {}
+  ) {
+    return this.page.waitForFunction(
+      `${
+        options?.waitUntil === "disappear" ? "!" : "!!"
+      }document.querySelector("${selector}")`
+    );
+  }
+
+  public async moveScrollToBottom(selector: string) {
+    let scrollPerc = await this.getVerticalScroll(selector);
+    const scrollerHeight = await this.getScrollerOffsetHeight(selector);
+    while (scrollerHeight !== null && scrollPerc !== null && scrollPerc < 0.9) {
+      // eslint-disable-next-line no-await-in-loop
+      await this.moveVerticalScroll(selector, scrollerHeight);
+      // eslint-disable-next-line no-await-in-loop
+      scrollPerc = await this.getVerticalScroll(selector);
+      // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+
+  public async setCookies(cookies?: TabCookie[]) {
+    if (cookies) {
+      this.page.setCookie(...cookies);
+    }
+  }
+
+  public async html() {
+    return this.page.evaluate(`(() => document.documentElement.innerHTML)()`);
   }
 }
