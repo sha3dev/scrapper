@@ -59,6 +59,10 @@ export default class Tab {
    */
 
   /**
+   * public: properties
+   */
+
+  /**
    * private: methods
    */
 
@@ -195,6 +199,14 @@ export default class Tab {
   }
 
   public async html() {
-    return this.page.evaluate(`(() => document.documentElement.innerHTML)()`);
+    const html = await this.page.evaluate(
+      `(() => document.documentElement.innerHTML)()`
+    );
+    return html as string;
+  }
+
+  public async getDocument() {
+    const html = await this.html();
+    return new JSDOM(html).window.document;
   }
 }
