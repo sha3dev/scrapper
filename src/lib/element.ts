@@ -6,7 +6,7 @@
  * imports: externals
  */
 
-import { Page, ElementHandle } from "puppeteer";
+import { ElementHandle } from "puppeteer";
 import sharp from "sharp";
 import Logger from "@sha3dev/logger";
 
@@ -14,6 +14,7 @@ import Logger from "@sha3dev/logger";
  * imports: internals
  */
 
+import Helpers from "./helpers";
 // import CONFIG from "../config";
 
 /**
@@ -25,6 +26,12 @@ const logger = new Logger("scrapper");
 /**
  * types
  */
+
+export type Image = {
+  id: string;
+  buffer: Buffer;
+  extension: "png";
+};
 
 /**
  * exports
@@ -51,7 +58,7 @@ export default class Element {
    * constructor
    */
 
-  constructor(private parentPage: Page, private elementHandle: ElementHandle) {
+  constructor(private elementHandle: ElementHandle) {
     this.id = Element.currentElementIndex;
     Element.currentElementIndex += 1;
   }
@@ -79,17 +86,18 @@ export default class Element {
     });
   }
 
-  public async toImageBuffer(
+  public async toImage(
     options: {
+      idPreffix?: string;
       omitBackground?: boolean;
       trim?: boolean;
       backgroundColor?: string;
     } = {}
-  ) {
+  ): Promise<Image> {
     let buffer = await this.elementHandle.screenshot({
-      omitBackground: !!options.omitBackground
+      omitBackground: options.omitBackground !== false
     });
-    if (options.trim || options?.backgroundColor) {
+    if (options.trim || options.backgroundColor) {
       let sharpInstance = sharp(buffer);
       if (options.trim) {
         sharpInstance = sharpInstance.trim();
@@ -101,7 +109,11 @@ export default class Element {
       }
       buffer = await sharpInstance.toBuffer();
     }
-    return Buffer.from(buffer);
+    return {
+      id: [options.idPreffix, Helpers.randomString()].filter(Boolean).join("-"),
+      buffer: Buffer.from(buffer),
+      extension: "png"
+    };
   }
 
   public async getValue(propertyName: string) {

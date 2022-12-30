@@ -27,7 +27,7 @@ const logger = new Logger("scrapper");
  * types
  */
 
-export type TabViewPort = {
+export type TabViewport = {
   width: number;
   height: number;
 };
@@ -35,11 +35,12 @@ export type TabViewPort = {
 export type TabCookie = {
   name: string;
   value: string;
+  domain: string;
 };
 
 export type TabConfig = {
   url: string;
-  viewport: TabViewPort;
+  viewport: TabViewport;
   style?: string;
   headers?: Record<string, string>;
   cookies?: TabCookie[];
@@ -65,10 +66,6 @@ export default class Tab {
   /**
    * private: methods
    */
-
-  private async setViewport(viewport: TabViewPort) {
-    await this.page.setViewport(viewport);
-  }
 
   private async setExtraHeaders(headers?: Record<string, string>) {
     if (headers) {
@@ -143,26 +140,33 @@ export default class Tab {
     await this.setViewport(tabConfig.viewport);
     await this.setExtraHeaders(tabConfig.headers);
     await this.navigateToUrl(tabConfig.url);
+    if (tabConfig.style) {
+      await this.page.addStyleTag({ content: tabConfig.style });
+    }
   }
 
   public async close() {
     await this.closeFunction();
   }
 
+  public async setViewport(viewport: TabViewport) {
+    await this.page.setViewport(viewport);
+  }
+
   public async addStyleTag(style: string) {
     const elem = await this.page.addStyleTag({ content: style });
-    const element = new Element(this.page, elem);
+    const element = new Element(elem);
     return element;
   }
 
   public async querySelector(selector: string) {
     const elementHandle = await this.page.$(selector);
-    return elementHandle ? new Element(this.page, elementHandle) : null;
+    return elementHandle ? new Element(elementHandle) : null;
   }
 
   public async querySelectorAll(selector: string) {
     const elementHandles = await this.page.$$(selector);
-    return elementHandles.map((i) => new Element(this.page, i));
+    return elementHandles.map((i) => new Element(i));
   }
 
   public async waitForSelector(
@@ -194,7 +198,7 @@ export default class Tab {
 
   public async setCookies(cookies?: TabCookie[]) {
     if (cookies) {
-      this.page.setCookie(...cookies);
+      await this.page.setCookie(...cookies);
     }
   }
 

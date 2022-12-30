@@ -23,6 +23,14 @@ import Tab from "./tab";
 const logger = new Logger("scrapper");
 
 /**
+ * types
+ */
+
+export type OpenNewTabOptions = {
+  headless?: boolean;
+};
+
+/**
  * exports
  */
 
@@ -47,10 +55,10 @@ export default class Scrapper {
    * public: methods
    */
 
-  public async openNewTab() {
+  public async openNewTab(options: OpenNewTabOptions = {}) {
     if (!this.browserInstance) {
       this.browserInstance = await puppeteer.launch({
-        headless: true,
+        headless: options.headless,
         args: CONFIG.PUPPETEER_LAUNCH_ARGS
       });
     }
