@@ -7,7 +7,6 @@
  */
 
 import puppeteer, { Browser } from "puppeteer";
-import Logger from "@sha3dev/logger";
 
 /**
  * imports: internals
@@ -19,8 +18,6 @@ import Tab from "./tab";
 /**
  * module: initializations
  */
-
-const logger = new Logger("scrapper");
 
 /**
  * types
