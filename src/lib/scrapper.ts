@@ -7,6 +7,7 @@
  */
 
 import puppeteer, { Browser } from "puppeteer";
+import Logger from "@sha3dev/logger";
 
 /**
  * imports: internals
@@ -18,6 +19,8 @@ import Tab from "./tab";
 /**
  * module: initializations
  */
+
+const logger = new Logger("scrapper");
 
 /**
  * types
@@ -54,6 +57,7 @@ export default class Scrapper {
 
   public async openNewTab(options: OpenNewTabOptions = {}) {
     if (!this.browserInstance) {
+      logger.debug("initializing headless browser");
       this.browserInstance = await puppeteer.launch({
         headless: options.headless,
         args: CONFIG.PUPPETEER_LAUNCH_ARGS
@@ -61,9 +65,11 @@ export default class Scrapper {
     }
     const newPage = await this.browserInstance.newPage();
     this.pagesCount += 1;
+    logger.debug(`opened new tab (${this.pagesCount})`);
     return new Tab(newPage, async () => {
-      this.pagesCount -= 1;
       await newPage.close();
+      logger.debug(`closed tab (${this.pagesCount})`);
+      this.pagesCount -= 1;
     });
   }
 }

@@ -169,6 +169,18 @@ export default class Tab {
     return elementHandles.map((i) => new Element(i));
   }
 
+  public async hideBySelector(selector: string) {
+    await this.page.evaluate((_selector: string) => {
+      const elements = Array.from(
+        window.document.querySelectorAll<HTMLElement>(_selector)
+      );
+      elements.forEach((element) => {
+        // eslint-disable-next-line no-param-reassign
+        element.style.visibility = "hidden";
+      });
+    }, selector);
+  }
+
   public async waitForSelector(
     selector: string,
     options: {

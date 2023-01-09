@@ -82,7 +82,7 @@ export default class Element {
     logger.debug(`hidding element ${this.id} from page`);
     await this.elementHandle.evaluate<HTMLElement[]>((i: any) => {
       // eslint-disable-next-line no-param-reassign
-      i.style.display = "none";
+      i.style.display = "none !important";
     });
   }
 
