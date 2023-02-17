@@ -43,7 +43,9 @@ export type TabConfig = {
   viewport: TabViewport;
   style?: string;
   headers?: Record<string, string>;
+  userAgent?: string;
   cookies?: TabCookie[];
+  colorScheme?: "dark" | "light";
 };
 
 /**
@@ -139,9 +141,23 @@ export default class Tab {
     await this.setCookies(tabConfig.cookies);
     await this.setViewport(tabConfig.viewport);
     await this.setExtraHeaders(tabConfig.headers);
+    await this.setUserAgent(tabConfig.userAgent);
+    if (tabConfig.colorScheme) {
+      await this.setColorScheme(tabConfig.colorScheme);
+    }
     await this.navigateToUrl(tabConfig.url);
     if (tabConfig.style) {
       await this.page.addStyleTag({ content: tabConfig.style });
+    }
+  }
+
+  public async reload(style: string) {
+    await this.page.reload({
+      waitUntil: "networkidle0",
+      timeout: CONFIG.DEFAULT_TIMEOUT_MS
+    });
+    if (style) {
+      await this.page.addStyleTag({ content: style });
     }
   }
 
@@ -151,6 +167,15 @@ export default class Tab {
 
   public async setViewport(viewport: TabViewport) {
     await this.page.setViewport(viewport);
+  }
+
+  public async setColorScheme(colorScheme: "dark" | "light") {
+    await this.page.emulateMediaFeatures([
+      {
+        name: "prefers-color-scheme",
+        value: colorScheme
+      }
+    ]);
   }
 
   public async addStyleTag(style: string) {
@@ -212,6 +237,16 @@ export default class Tab {
     if (cookies) {
       await this.page.setCookie(...cookies);
     }
+  }
+
+  public async setUserAgent(userAgent?: string) {
+    if (userAgent) {
+      await this.page.setUserAgent(userAgent);
+    }
+  }
+
+  public exec(functionSring: string) {
+    return this.execFunction(functionSring);
   }
 
   public async html() {

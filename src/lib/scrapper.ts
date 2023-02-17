@@ -28,6 +28,7 @@ const logger = new Logger("scrapper");
 
 export type OpenNewTabOptions = {
   headless?: boolean;
+  windowSize?: string;
 };
 
 /**
@@ -58,9 +59,13 @@ export default class Scrapper {
   public async openNewTab(options: OpenNewTabOptions = {}) {
     if (!this.browserInstance) {
       logger.debug("initializing headless browser");
+      const args = CONFIG.PUPPETEER_LAUNCH_ARGS;
+      if (options.windowSize) {
+        args.push(`--window-size=${options.windowSize}`);
+      }
       this.browserInstance = await puppeteer.launch({
         headless: options.headless,
-        args: CONFIG.PUPPETEER_LAUNCH_ARGS
+        args
       });
     }
     const newPage = await this.browserInstance.newPage();

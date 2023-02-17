@@ -92,15 +92,33 @@ export default class Element {
       omitBackground?: boolean;
       trim?: boolean;
       backgroundColor?: string;
+      padding?: number | [number, number, number, number];
     } = {}
   ): Promise<Image> {
     let buffer = await this.elementHandle.screenshot({
       omitBackground: options.omitBackground !== false
     });
-    if (options.trim || options.backgroundColor) {
+    if (options.trim || options.backgroundColor || options.padding) {
       let sharpInstance = sharp(buffer);
       if (options.trim) {
         sharpInstance = sharpInstance.trim();
+      }
+      if (options.padding) {
+        sharpInstance = sharpInstance.extend({
+          top: Array.isArray(options.padding)
+            ? options.padding[0]
+            : options.padding,
+          right: Array.isArray(options.padding)
+            ? options.padding[1]
+            : options.padding,
+          bottom: Array.isArray(options.padding)
+            ? options.padding[2]
+            : options.padding,
+          left: Array.isArray(options.padding)
+            ? options.padding[3]
+            : options.padding,
+          background: options.backgroundColor || { r: 0, g: 0, b: 0, alpha: 0 }
+        });
       }
       if (options.backgroundColor) {
         sharpInstance = sharpInstance.flatten({
